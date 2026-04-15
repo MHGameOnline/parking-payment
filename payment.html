@@ -21,9 +21,30 @@ box-shadow:0 2px 10px rgba(0,0,0,0.1);
 text-align:center;
 }
 
-.amount-btn{
+.amount-text{
+font-size:22px;
+font-weight:bold;
+margin:20px 0;
+}
+
+.loader{
+border:5px solid #f3f3f3;
+border-top:5px solid #0b5ed7;
+border-radius:50%;
+width:40px;
+height:40px;
+animation:spin 1s linear infinite;
+margin:20px auto;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.pay-btn{
 display:block;
-margin:10px 0;
+margin:20px auto;
 padding:15px;
 background:#0b5ed7;
 color:white;
@@ -31,10 +52,6 @@ border:none;
 width:100%;
 border-radius:6px;
 font-size:18px;
-}
-
-.amount-btn:hover{
-background:#084298;
 }
 
 </style>
@@ -60,47 +77,113 @@ background:#084298;
 
 <h2>Add Coins</h2>
 
-<button class="amount-btn" onclick="pay(100)">₹100</button>
-<button class="amount-btn" onclick="pay(500)">₹500</button>
-<button class="amount-btn" onclick="pay(1000)">₹1000</button>
+<div class="amount-text" id="amountText">
+Loading...
+</div>
+
+<div class="loader" id="loader"></div>
+
+<button class="pay-btn" id="payBtn" onclick="startPayment()" style="display:none;">
+Proceed To Payment
+</button>
 
 </div>
 
 <script>
 
-function getUserId(){
+// Prevent Back Button
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+history.go(1);
+};
+
+// Get Parameters
+function getParams(){
 
 const urlParams = new URLSearchParams(window.location.search);
-return urlParams.get('userId');
+
+return {
+userId : urlParams.get('userId'),
+amount : urlParams.get('amount')
+};
 
 }
 
-function pay(amount){
+let paymentData = getParams();
 
-var userId = getUserId();
+document.getElementById("amountText").innerText =
+"Amount : ₹" + paymentData.amount;
+
+
+// Start Payment
+function startPayment(){
+
+document.getElementById("loader").style.display = "block";
+document.getElementById("payBtn").style.display = "none";
 
 var options = {
-    "key": "rzp_live_SP9rSLDroPIzRi",
-    "amount": amount * 100,
-    "currency": "INR",
-    "name": "SmartPark",
-    "description": "Add Coins",
 
-    "notes": {
-        "userId": userId
-    },
+"key": "rzp_live_SP9rSLDroPIzRi",
 
-    "handler": function (response){
+"amount": paymentData.amount * 100,
 
-        alert("Payment Successful");
+"currency": "INR",
 
-        window.location.href = "success.html";
+"name": "SmartPark",
 
-    }
+"description": "Add Coins",
+
+"method": {
+"upi": true,
+"netbanking": true,
+"card": true,
+"wallet": true
+},
+
+"notes": {
+"userId": paymentData.userId
+},
+
+"theme": {
+"color": "#0b5ed7"
+},
+
+"handler": function (response){
+
+alert("Payment Successful");
+
+window.location.href = "success.html";
+
+},
+
+"modal": {
+"ondismiss": function(){
+
+document.getElementById("loader").style.display = "none";
+document.getElementById("payBtn").style.display = "block";
+
+alert("Payment Cancelled");
+
+}
+}
+
 };
 
 var rzp = new Razorpay(options);
+
 rzp.open();
+
+}
+
+
+// Auto Start Payment
+window.onload = function(){
+
+setTimeout(function(){
+
+startPayment();
+
+},1000);
 
 }
 
