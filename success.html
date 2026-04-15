@@ -10,9 +10,15 @@ window.onload = function(){
 
 setTimeout(function(){
 
-window.location.href = "smartpark://payment-success";
+window.location.href =
+"smartpark://payment-success?screen=wallet";
+setTimeout(function(){
 
-},1500);
+window.close();
+
+},500);
+
+},1200);
 
 }
 
@@ -25,7 +31,6 @@ window.location.href = "smartpark://payment-success";
 <div class="page">
 
 <h2>Payment Successful</h2>
-
 <p>Returning to app...</p>
 
 </div>
